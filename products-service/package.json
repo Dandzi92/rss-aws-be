@@ -4,14 +4,17 @@
   "description": "Serverless aws-nodejs-typescript template",
   "main": "serverless.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "offline": "sls offline --noPrependStageInUrl"
   },
   "engines": {
     "node": ">=14.15.0"
   },
   "dependencies": {
     "@middy/core": "^2.5.3",
-    "@middy/http-json-body-parser": "^2.5.3"
+    "@middy/http-json-body-parser": "^2.5.3",
+    "serverless-auto-swagger": "^2.8.2",
+    "serverless-offline": "^10.2.1"
   },
   "devDependencies": {
     "@serverless/typescript": "^3.0.0",

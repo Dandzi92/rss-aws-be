@@ -7,7 +7,11 @@ import getProduct from "@functions/getProduct";
 const serverlessConfiguration: AWS = {
   service: "products-service",
   frameworkVersion: "3",
-  plugins: ["serverless-esbuild"],
+  plugins: [
+    "serverless-auto-swagger",
+    "serverless-esbuild",
+    "serverless-offline",
+  ],
   provider: {
     name: "aws",
     runtime: "nodejs14.x",
@@ -25,6 +29,11 @@ const serverlessConfiguration: AWS = {
   functions: { getProducts, getProduct },
   package: { individually: true },
   custom: {
+    autoswagger: {
+      useStage: true,
+      basePath: "/dev",
+      host: "xwd18eaflg.execute-api.eu-west-1.amazonaws.com",
+    },
     esbuild: {
       bundle: true,
       minify: false,

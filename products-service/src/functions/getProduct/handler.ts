@@ -1,5 +1,6 @@
 // import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { formatJSONResponse } from "@libs/api-gateway";
+import { AppError } from "@libs/app-error";
 import { middyfy } from "@libs/lambda";
 
 // import schema from "./schema";
@@ -66,8 +67,9 @@ const products = [
 const getProduct = async (event) => {
   const id = event.pathParameters.id;
   const product = products.find((product) => product.id === id);
+  if (!product) throw new AppError("Product not found", 404);
   return formatJSONResponse({
-    data: [product],
+    data: product,
     event,
   });
 };
