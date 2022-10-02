@@ -1,73 +1,35 @@
-// import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { formatJSONResponse } from "@libs/api-gateway";
+import { AppError } from "@libs/app-error";
+import { dynamo } from "@libs/dynamo";
 import { middyfy } from "@libs/lambda";
+import { APIGatewayProxyEvent } from "aws-lambda";
 
-// import schema from "./schema";
+const getProducts = async (event: APIGatewayProxyEvent) => {
+  try {
+    const productsTable = process.env.productsTable;
+    const stocksTable = process.env.stocksTable;
+    const [productsResults, stocksResults] = await Promise.all([
+      dynamo.getAll(productsTable),
+      dynamo.getAll(stocksTable),
+    ]);
+    const products = productsResults.map((product) => {
+      const stocksResult = stocksResults.find(
+        (stock) => stock.id === product.id
+      );
+      return { ...product, count: stocksResult.count };
+    });
+    console.log({
+      data: products,
+      event,
+    });
 
-const products = [
-  {
-    count: 4,
-    description: "Short Product Description1",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80aa",
-    price: 2.4,
-    title: "ProductOne",
-  },
-  {
-    count: 6,
-    description: "Short Product Description3",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a0",
-    price: 10,
-    title: "ProductNew",
-  },
-  {
-    count: 7,
-    description: "Short Product Description2",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a2",
-    price: 23,
-    title: "ProductTop",
-  },
-  {
-    count: 12,
-    description: "Short Product Description7",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a1",
-    price: 15,
-    title: "ProductTitle",
-  },
-  {
-    count: 7,
-    description: "Short Product Description2",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a3",
-    price: 23,
-    title: "Product",
-  },
-  {
-    count: 8,
-    description: "Short Product Description4",
-    id: "7567ec4b-b10c-48c5-9345-fc73348a80a1",
-    price: 15,
-    title: "ProductTest",
-  },
-  {
-    count: 2,
-    description: "Short Product Descriptio1",
-    id: "7567ec4b-b10c-48c5-9445-fc73c48a80a2",
-    price: 23,
-    title: "Product2",
-  },
-  {
-    count: 3,
-    description: "Short Product Description7",
-    id: "7567ec4b-b10c-45c5-9345-fc73c48a80a1",
-    price: 15,
-    title: "ProductName",
-  },
-];
-
-const getProducts = async (event) => {
-  return formatJSONResponse({
-    data: products,
-    event,
-  });
+    return formatJSONResponse({
+      data: products,
+      event,
+    });
+  } catch (error) {
+    throw new AppError(error.message, 500);
+  }
 };
 
 export const main = middyfy(getProducts);

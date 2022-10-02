@@ -1,8 +1,8 @@
 import type { AWS } from "@serverless/typescript";
 
-// import hello from "@functions/hello";
 import getProducts from "@functions/getProducts";
 import getProduct from "@functions/getProduct";
+import createProduct from "@functions/createProduct";
 
 const serverlessConfiguration: AWS = {
   resources: {
@@ -58,6 +58,20 @@ const serverlessConfiguration: AWS = {
     name: "aws",
     runtime: "nodejs14.x",
     region: "eu-west-1",
+    iamRoleStatements: [
+      {
+        Effect: "Allow",
+        Action: "dynamodb:*",
+        Resource:
+          "arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:custom.productsTableName}",
+      },
+      {
+        Effect: "Allow",
+        Action: "dynamodb:*",
+        Resource:
+          "arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:custom.stocksTableName}",
+      },
+    ],
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
@@ -70,9 +84,11 @@ const serverlessConfiguration: AWS = {
     },
   },
   // import the function via paths
-  functions: { getProducts, getProduct },
+  functions: { getProducts, getProduct, createProduct },
   package: { individually: true },
   custom: {
+    stocksTableName: "${sls:stage}-table-stocks",
+    productsTableName: "${sls:stage}-table-products",
     autoswagger: {
       useStage: true,
       basePath: "/dev",

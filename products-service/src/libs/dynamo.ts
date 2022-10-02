@@ -6,6 +6,8 @@ import {
   GetCommandInput,
   QueryCommand,
   QueryCommandInput,
+  ScanCommand,
+  ScanCommandInput,
 } from "@aws-sdk/lib-dynamodb";
 
 const dynamoClient = new DynamoDBClient({});
@@ -33,6 +35,15 @@ export const dynamo = {
     const response = await dynamoClient.send(command);
 
     return response.Item;
+  },
+
+  getAll: async (tableName: string) => {
+    const params: ScanCommandInput = {
+      TableName: tableName,
+    };
+    const command = new ScanCommand(params);
+    const response = await dynamoClient.send(command);
+    return response.Items;
   },
 
   query: async ({

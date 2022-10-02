@@ -1,77 +1,35 @@
-// import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { formatJSONResponse } from "@libs/api-gateway";
 import { AppError } from "@libs/app-error";
 import { middyfy } from "@libs/lambda";
+import { dynamo } from "@libs/dynamo";
+import { APIGatewayProxyEvent } from "aws-lambda";
 
-// import schema from "./schema";
+const getProduct = async (event: APIGatewayProxyEvent) => {
+  try {
+    const id = event.pathParameters.id;
+    const productsTable = process.env.productsTable;
+    const stocksTable = process.env.stocksTable;
+    const [productResult, stocksResult] = await Promise.all([
+      dynamo.get(id, productsTable),
+      dynamo.get(id, stocksTable),
+    ]);
 
-const products = [
-  {
-    count: 4,
-    description: "Short Product Description1",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80aa",
-    price: 2.4,
-    title: "ProductOne",
-  },
-  {
-    count: 6,
-    description: "Short Product Description3",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a0",
-    price: 10,
-    title: "ProductNew",
-  },
-  {
-    count: 7,
-    description: "Short Product Description2",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a2",
-    price: 23,
-    title: "ProductTop",
-  },
-  {
-    count: 12,
-    description: "Short Product Description7",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a1",
-    price: 15,
-    title: "ProductTitle",
-  },
-  {
-    count: 7,
-    description: "Short Product Description2",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a3",
-    price: 23,
-    title: "Product",
-  },
-  {
-    count: 8,
-    description: "Short Product Description4",
-    id: "7567ec4b-b10c-48c5-9345-fc73348a80a1",
-    price: 15,
-    title: "ProductTest",
-  },
-  {
-    count: 2,
-    description: "Short Product Descriptio1",
-    id: "7567ec4b-b10c-48c5-9445-fc73c48a80a2",
-    price: 23,
-    title: "Product2",
-  },
-  {
-    count: 3,
-    description: "Short Product Description7",
-    id: "7567ec4b-b10c-45c5-9345-fc73c48a80a1",
-    price: 15,
-    title: "ProductName",
-  },
-];
+    if (!productResult) throw new AppError("Product not found", 404);
 
-const getProduct = async (event) => {
-  const id = event.pathParameters.id;
-  const product = products.find((product) => product.id === id);
-  if (!product) throw new AppError("Product not found", 404);
-  return formatJSONResponse({
-    data: product,
-    event,
-  });
+    const product = { ...productResult, count: stocksResult.count };
+
+    console.log({
+      data: product,
+      event,
+    });
+
+    return formatJSONResponse({
+      data: product,
+      event,
+    });
+  } catch (error) {
+    throw new AppError(error.message, 500);
+  }
 };
 
 export const main = middyfy(getProduct);
