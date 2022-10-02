@@ -14,7 +14,9 @@
     "@middy/core": "^2.5.3",
     "@middy/http-json-body-parser": "^2.5.3",
     "serverless-auto-swagger": "^2.8.2",
-    "serverless-offline": "^10.2.1"
+    "serverless-offline": "^10.2.1",
+    "@aws-sdk/lib-dynamodb": "^3.76.0",
+    "@aws-sdk/client-dynamodb": "^3.76.0"
   },
   "devDependencies": {
     "@serverless/typescript": "^3.0.0",
