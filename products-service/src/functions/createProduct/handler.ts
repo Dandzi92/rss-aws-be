@@ -1,11 +1,16 @@
-import { formatJSONResponse } from "@libs/api-gateway";
+import {
+  formatJSONResponse,
+  ValidatedEventAPIGatewayProxyEvent,
+} from "@libs/api-gateway";
 import { AppError } from "@libs/app-error";
 import { middyfy } from "@libs/lambda";
 import { dynamo } from "@libs/dynamo";
 import { v4 as uuid } from "uuid";
-import { APIGatewayProxyEvent } from "aws-lambda";
+import schema from "./schema";
 
-const createProduct = async (event: APIGatewayProxyEvent) => {
+const createProduct: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+  event
+) => {
   try {
     const body = JSON.parse(JSON.stringify(event.body));
     const code = uuid().slice(0, 8);
