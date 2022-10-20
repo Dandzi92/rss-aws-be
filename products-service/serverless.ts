@@ -3,10 +3,27 @@ import type { AWS } from "@serverless/typescript";
 import getProducts from "@functions/getProducts";
 import getProduct from "@functions/getProduct";
 import createProduct from "@functions/createProduct";
+import catalogBatchProcess from "@functions/catalogBatchProcess";
 
 const serverlessConfiguration: AWS = {
   resources: {
     Resources: {
+      SNSTopic: {
+        Type: 'AWS::SNS::Topic',
+        Properties: {
+          TopicName: "${self:custom.topicName}"
+        }
+      },
+      SNSSubscription: {
+        Type: 'AWS::SNS::Subscription',
+        Properties: {
+          Endpoint: 'kvantokost@gmail.com',
+          Protocol: 'email',
+          TopicArn: {
+            Ref: 'SNSTopic'
+          }
+        }
+      },
       productsTable: {
         Type: "AWS::DynamoDB::Table",
         Properties: {
@@ -71,6 +88,12 @@ const serverlessConfiguration: AWS = {
         Resource:
           "arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:custom.stocksTableName}",
       },
+      {
+        Effect: "Allow",
+        Action: "sns:*",
+        Resource:
+          "arn:aws:sns:${self:provider.region}:${aws:accountId}:${self:custom.topicName}",
+      },
     ],
     apiGateway: {
       minimumCompressionSize: 1024,
@@ -81,14 +104,17 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
       stocksTable: "${self:custom.stocksTableName}",
       productsTable: "${self:custom.productsTableName}",
+      snsTopic: "${self:custom.topicName}",
+      snsArn: "arn:aws:sns:${self:provider.region}:${aws:accountId}:${self:custom.topicName}",
     },
   },
   // import the function via paths
-  functions: { getProducts, getProduct, createProduct },
+  functions: { getProducts, getProduct, createProduct, catalogBatchProcess },
   package: { individually: true },
   custom: {
     stocksTableName: "${sls:stage}-table-stocks",
     productsTableName: "${sls:stage}-table-products",
+    topicName: "${sls:stage}-sns-topic",
     autoswagger: {
       useStage: true,
       basePath: "/dev",

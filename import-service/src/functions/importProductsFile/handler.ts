@@ -4,6 +4,7 @@ import { s3Client } from "@libs/s3";
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 const importProductsFile = async (event: APIGatewayProxyEvent) => {
+
   const bucket = process.env.importFileBucket;
   const key = `uploaded/${event.queryStringParameters.name}`;
 
