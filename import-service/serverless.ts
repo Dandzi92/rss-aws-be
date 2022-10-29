@@ -9,6 +9,17 @@ const serverlessConfiguration: AWS = {
         Properties: {
           QueueName: "parse-csv-products-sqs-queue"
         }
+      },
+      GatewayResponseDefault401: {
+        Type: 'AWS::ApiGateway::GatewayResponse',
+        Properties: {
+          ResponseParameters: {
+            'gatewayresponse.header.Access-Control-Allow-Origin': "'*'",
+            'gatewayresponse.header.Access-Control-Allow-Headers': "'*'"
+          },
+          ResponseType: 'UNAUTHORIZED',
+          RestApiId: 'xrrzo5hore'
+        },
       }
     }
   },
